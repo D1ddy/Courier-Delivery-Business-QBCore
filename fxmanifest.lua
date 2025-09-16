@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 games {"gta5", "rdr3"}
 
-author "Sly"
+author "Dida"
 version '1.0.0'
 
 lua54 'yes'

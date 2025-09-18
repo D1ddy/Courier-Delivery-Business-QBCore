@@ -10,8 +10,8 @@ exports['qb-core']:AddJob('deliverydriver', {
     }
 })
 local QBCore = exports['qb-core']:GetCoreObject()
+local isJobInProgress = false
 RegisterNetEvent('hirePlayerOrOpenMeni',function()
-    --TODO: Add checker if a job is in progress
     local Player = QBCore.Functions.GetPlayer(source)
     local jobInfo = Player.PlayerData.job
     local name = jobInfo.name
@@ -21,7 +21,11 @@ RegisterNetEvent('hirePlayerOrOpenMeni',function()
         Player.Functions.UpdatePlayerData()
     else
         --TODO: Open meni but first i'll do when pressed e just to send a job
-        TriggerClientEvent('startJob', source)
+        if isJobInProgress == false then
+            TriggerClientEvent('startJob', source)
+        else
+            Player.Functions.Notify('Job is already in progress', 'error', 5000)
+        end
     end
 end)
 RegisterNetEvent('isPlayerDeliveryDriver',function()
@@ -32,5 +36,29 @@ RegisterNetEvent('isPlayerDeliveryDriver',function()
         TriggerClientEvent('playerIsNotDeliveryDriver:client', source)
     else
         TriggerClientEvent('playerIsDeliveryDriver:client',source)
+    end
+end)
+RegisterNetEvent('isJobInProgress',function()
+    if isJobInProgress == false then
+        isJobInProgress = true
+    else
+        isJobInProgress = false
+    end
+end)
+RegisterNetEvent('payPlayer',function()
+    --TODO: After adding more routes add a switch statement longer jobs more money
+    local Player = QBCore.Functions.GetPlayer(source)
+    if not Player then return end
+    Player.Functions.AddMoney('cash', 250)
+end)
+RegisterNetEvent('cancelDelivery:server',function()
+    local Player = QBCore.Functions.GetPlayer(source)
+    if isJobInProgress then
+        isJobInProgress = false
+        Player.Functions.Notify('Job canceled','success',2000)
+        TriggerClientEvent('deleteVehicle', source)
+    else
+        if not Player then return end
+        Player.Functions.Notify('Player is not in a job','error' ,5000)
     end
 end)

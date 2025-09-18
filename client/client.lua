@@ -1,5 +1,16 @@
--- TODO: Add on the map a small icon to show that there is a job there -> try some sort of minimap/map component
+Citizen.CreateThread(function()
+    local blip = AddBlipForCoord(-515.0, -2202.0, 6.0)
+    SetBlipSprite(blip, 477) -- 477 is a truck 
+    SetBlipDisplay(blip, 6)
+    SetBlipScale(blip, 1.0)
+    SetBlipColour(blip, 61) -- 61 is mulberry pink
+    SetBlipAsShortRange(blip, true)
+    BeginTextCommandSetBlipName("STRING")
+    AddTextComponentString("Delivery Company")
+    EndTextCommandSetBlipName(blip)
+end)
 local interactDistance = 10
+local vehicle = nil
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(100)
@@ -30,15 +41,15 @@ RegisterNetEvent('playerIsNotDeliveryDriver:client',function()
     SendNUI('playerIsNotDeliveryDriver:notification','Press E to get hired')
 end)
 RegisterNetEvent('startJob',function()
-    -- TODO: Trigger a serverevent for checking if job is already in progress 
+    TriggerServerEvent('isJobInProgress')
     local shortRoute = {vector3(-146.0,-1772.0,29.0),vector3(21.0,-1876.0,22.0),vector3(100.0,-1948.0,20.0),vector3(160.0,-1895.0,22.0),vector3(124.0,-1547.0,28.0),vector3(-495.0,-2179.0,8.0)}
     local MarkerTypeVerticalCylinder = 1 
     local playerCoords = GetEntityCoords(PlayerPedId())
     Citizen.CreateThread(function()
-        local vehicle = nil
+        
         while true do
             Citizen.Wait(0)
-            DrawMarker(MarkerTypeVerticalCylinder, -504.4, -2205.21, 4.0 , 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 0, 255 ,0 , 255, false,true,2,false,nil,nil,false)
+            DrawMarker(MarkerTypeVerticalCylinder, -504.4, -2205.21, 5.0 , 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 3.3, 0, 255 ,0 , 255, false,true,2,false,nil,nil,false)
             if IsEntityAtCoord(PlayerPedId(), -504.4, -2205.21, 6.0, 1.0, 1.0, 1.0, true, true, 0) then
                 --TODO: Change outfit to a delivery driver
                 local vehicleHash = 'mule2'
@@ -48,6 +59,7 @@ RegisterNetEvent('startJob',function()
                     Wait(0)
                 end
                 vehicle = CreateVehicle(vehicleHash, -508.15, -2194.16, 7.0, 320.18, true, false)
+                SetEntityAsMissionEntity(vehicle,true,true)
                 local plate = GetVehicleNumberPlateText(vehicle)
                 TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate)
                 SetModelAsNoLongerNeeded(vehicleHash)
@@ -69,6 +81,16 @@ RegisterNetEvent('startJob',function()
         
         
         end
-
+        TriggerServerEvent('payPlayer')
+        TriggerServerEvent('isJobInProgress')
+        Wait(4000)
+        DeleteVehicle(vehicle)
     end)
 end)
+RegisterCommand('cancelDelivery', function()
+    TriggerServerEvent('cancelDelivery:server')
+    RegisterNetEvent('deleteVehicle',function()
+        DeleteVehicle(vehicle)
+    end)
+end, false)
+--TODO: Pickup box logic 

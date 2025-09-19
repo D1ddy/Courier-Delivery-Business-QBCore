@@ -11,6 +11,7 @@ ui_page 'web/dist/index.html'
 client_script {
   'client/utils.lua',
   'client/client.lua',
+  'client/pickup.lua',
 }
 server_script "server/**/*"
 
